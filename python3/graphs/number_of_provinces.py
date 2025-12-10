@@ -1,6 +1,7 @@
-# link: https://leetcode.com/problems/redundant-connection/description/?envType=problem-list-v2&envId=graph
+# link: https://leetcode.com/problems/number-of-provinces/?envType=problem-list-v2&envId=graph
 
 from typing import List
+
 from typing import Tuple, Any
 import random
 
@@ -111,15 +112,15 @@ class DisJointSet(object):
 
 
 class Solution:
-    def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
+    def findCircleNum(self, isConnected: List[List[int]]) -> int:
         ds = DisJointSet()
-        edge_to_remove = []
-        for x, y in edges:
-            ds.add(x)
-            ds.add(y)
-            if ds.same_set(x, y):
-                edge_to_remove = [x, y]
-            else:
-                ds.union(x, y)
+        for i in range(len(isConnected)):
+            ds.add(i)
 
-        return edge_to_remove
+            row = isConnected[i]
+            for j in range(len(row)):
+                if row[j] == 1:
+                    ds.add(j)
+                    ds.union(i, j)
+
+        return ds.components

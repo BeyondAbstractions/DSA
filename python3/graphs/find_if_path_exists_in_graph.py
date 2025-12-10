@@ -3,13 +3,16 @@
 from typing import List
 from collections import deque
 
+
 class Solution:
-    def validPath_bfs(self, n: int, edges: List[List[int]], source: int, destination: int) -> bool:
+    def validPath_bfs(
+        self, n: int, edges: List[List[int]], source: int, destination: int
+    ) -> bool:
         G = {i: list() for i in range(n)}
         for a, b in edges:
             G[a].append(b)
             G[b].append(a)
-        
+
         q = deque()
         q.append(source)
         visited = set()
@@ -24,17 +27,19 @@ class Solution:
             for d in G[current]:
                 if d not in visited:
                     q.append(d)
-                
+
                 if d == destination:
-                    return True        
+                    return True
         return False
 
-    def validPath_dfs(self, n: int, edges: List[List[int]], source: int, destination: int) -> bool:
+    def validPath_dfs(
+        self, n: int, edges: List[List[int]], source: int, destination: int
+    ) -> bool:
         G = {i: list() for i in range(n)}
         for a, b in edges:
             G[a].append(b)
             G[b].append(a)
-        
+
         stack = deque()
         stack.append((source, iter(G[source])))
         visited = set()
@@ -55,10 +60,9 @@ class Solution:
 
         return False
 
-
-    def validPath(self, n: int, edges: List[List[int]], source: int, destination: int) -> bool:
-        return self.validPath_dfs(n=n, edges=edges, source=source, destination=destination)
-
-
-        
-        
+    def validPath(
+        self, n: int, edges: List[List[int]], source: int, destination: int
+    ) -> bool:
+        return self.validPath_dfs(
+            n=n, edges=edges, source=source, destination=destination
+        )

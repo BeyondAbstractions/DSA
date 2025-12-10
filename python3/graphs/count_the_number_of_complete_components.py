@@ -1,7 +1,7 @@
-# link: https://leetcode.com/problems/redundant-connection/description/?envType=problem-list-v2&envId=graph
+# link: https://leetcode.com/problems/count-the-number-of-complete-components/?envType=problem-list-v2&envId=graph
 
-from typing import List
-from typing import Tuple, Any
+from typing import List, Tuple, Any
+from collections import defaultdict
 import random
 
 
@@ -63,7 +63,7 @@ class DisJointSet(object):
         del self.size[root_x]
         self.components -= 1
 
-    def size(self, x) -> int:
+    def total(self, x) -> int:
         return self.size[self.find(x)[1]]
 
     def members(self, x) -> set:
@@ -111,15 +111,46 @@ class DisJointSet(object):
 
 
 class Solution:
-    def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
+    def countCompleteComponents(self, n: int, edges: List[List[int]]) -> int:
         ds = DisJointSet()
-        edge_to_remove = []
         for x, y in edges:
             ds.add(x)
             ds.add(y)
-            if ds.same_set(x, y):
-                edge_to_remove = [x, y]
-            else:
-                ds.union(x, y)
+            ds.union(x, y)
 
-        return edge_to_remove
+        edge_count = defaultdict(int)
+        components = 0
+
+        for x, y in edges:
+            representative = ds.find(x)[1]
+            representative_y = ds.find(y)[1]
+            assert representative == representative_y
+            edge_count[representative] += 1
+            node_count = ds.total(x)
+            expected_edge_count = (node_count * (node_count - 1)) / 2
+            obtained_edge_count = edge_count[representative]
+            if expected_edge_count == obtained_edge_count:
+                components += 1
+
+        for i in range(n):
+            if not ds.find(i)[0]:
+                components += 1
+
+        return components
+
+
+import unittest
+
+
+class Test(unittest.TestCase):
+
+    def test_case0(self):
+        edges = [[0, 1], [0, 2], [1, 2], [3, 4]]
+        n = 6
+        s = Solution()
+        ret = s.countCompleteComponents(n, edges)
+        self.assertEqual(ret, 3)
+
+
+if __name__ == "__main__":
+    unittest.main()

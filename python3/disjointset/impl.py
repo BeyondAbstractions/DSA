@@ -1,6 +1,22 @@
-# link: https://leetcode.com/problems/redundant-connection/description/?envType=problem-list-v2&envId=graph
+# An implementation of disjoint set.
+# Intution: each set is a tree, and the representative element of a set is the root of the tree.
+# A given element can be the root of a tree or a node within the tree.
+# Each element belongs to a tree among a set of disjoint trees.
+# Each element maintains its parent.
+# Merging 2 elements means merging their respective trees.
 
-from typing import List
+# operations:
+# find(x): find the representative element of the set that x belongs to,
+#          if x is not belonging to any set make it the root of a new
+#          disjoint set, i.e, x is its own tree.
+# union(x, y): merge the sets that x and y belong to
+# total(x): return the size of the set that x belongs to
+# members(x): return all the members of the set that x belongs to
+# add(x): add x to the disjoint set
+# remove(x): remove x from the disjoint set
+# same(x, y): return True if x and y belong to the same set, False otherwise
+# isolate(x): remove x from the set to which it belongs to and make it an independent set
+
 from typing import Tuple, Any
 import random
 
@@ -63,7 +79,7 @@ class DisJointSet(object):
         del self.size[root_x]
         self.components -= 1
 
-    def size(self, x) -> int:
+    def total(self, x) -> int:
         return self.size[self.find(x)[1]]
 
     def members(self, x) -> set:
@@ -108,18 +124,3 @@ class DisJointSet(object):
             return True
         else:
             return False
-
-
-class Solution:
-    def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
-        ds = DisJointSet()
-        edge_to_remove = []
-        for x, y in edges:
-            ds.add(x)
-            ds.add(y)
-            if ds.same_set(x, y):
-                edge_to_remove = [x, y]
-            else:
-                ds.union(x, y)
-
-        return edge_to_remove

@@ -5,7 +5,7 @@ import pprint
 
 class Solution(object):
 
-    def bfs(
+    def dfs(
         self, g: typing.Dict[int, typing.List[int]], s: int
     ) -> typing.Dict[str, typing.Any]:
         ret = dict()

@@ -1,6 +1,7 @@
-# link: https://leetcode.com/problems/redundant-connection/description/?envType=problem-list-v2&envId=graph
+# link: https://leetcode.com/problems/path-existence-queries-in-a-graph-i/description/?envType=problem-list-v2&envId=graph
 
 from typing import List
+
 from typing import Tuple, Any
 import random
 
@@ -63,7 +64,7 @@ class DisJointSet(object):
         del self.size[root_x]
         self.components -= 1
 
-    def size(self, x) -> int:
+    def total(self, x) -> int:
         return self.size[self.find(x)[1]]
 
     def members(self, x) -> set:
@@ -111,15 +112,73 @@ class DisJointSet(object):
 
 
 class Solution:
-    def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
-        ds = DisJointSet()
-        edge_to_remove = []
-        for x, y in edges:
-            ds.add(x)
-            ds.add(y)
-            if ds.same_set(x, y):
-                edge_to_remove = [x, y]
-            else:
-                ds.union(x, y)
 
-        return edge_to_remove
+    def pathExistenceQueries(
+        self, n: int, nums: List[int], maxDiff: int, queries: List[List[int]]
+    ) -> List[bool]:
+        ds = DisJointSet()
+        i = 0
+
+        def collapse(start):
+            nonlocal ds, maxDiff, nums
+            i = start + 1
+            ds.add(start)
+            while i < n:
+                if abs(nums[i] - nums[start]) <= maxDiff:
+                    ds.add(i)
+                    ds.union(i, start)
+                else:
+                    return i
+                i += 1
+            return i
+
+        i = 0
+        while True:
+            i = collapse(i)
+
+            if i >= n:
+                break
+
+            if abs(nums[i - 1] - nums[i]) <= maxDiff:
+                ds.add(i)
+                ds.union(i, i - 1)
+
+        ret = list()
+        for x, y in queries:
+            ret.append(ds.same_set(x, y))
+
+        return ret
+
+
+import unittest
+
+
+class Test(unittest.TestCase):
+
+    def test_case0(self):
+        s = Solution()
+        n = 2
+        maxDiff = 1
+        nums = [1, 3]
+        queries = [[0, 0], [0, 1]]
+        ret = s.pathExistenceQueries(n, nums, maxDiff, queries)
+        print()
+        import pprint
+
+        pprint.pprint(ret)
+
+    def test_case1(self):
+        s = Solution()
+        n = 4
+        maxDiff = 2
+        nums = [2, 5, 6, 8]
+        queries = [[0, 1], [0, 2], [1, 3], [2, 3]]
+        ret = s.pathExistenceQueries(n, nums, maxDiff, queries)
+        print()
+        import pprint
+
+        pprint.pprint(ret)
+
+
+if __name__ == "__main__":
+    unittest.main()

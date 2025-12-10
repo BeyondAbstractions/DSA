@@ -153,6 +153,7 @@ class Function:
     @staticmethod
     def coin_change_problem_cached(coins, amount):
         mcoin = min(coins)
+
         @track.track
         @functools.cache
         def coin_change_problem_cached_impl(amount):
@@ -173,6 +174,7 @@ class Function:
     @staticmethod
     def coin_change_problem(coins, amount):
         mcoin = min(coins)
+
         @track.track
         def coin_change_problem_impl(amount):
             nonlocal coins, mcoin
@@ -208,8 +210,8 @@ class Function:
     def test_n(n):
         if n <= 0:
             return
-        for i in range(1, n+1):
-            Function.test_n(n=n-i)
+        for i in range(1, n + 1):
+            Function.test_n(n=n - i)
 
     @track.track
     @functools.cache
@@ -222,12 +224,36 @@ class Function:
         # for i in range(1, 3):
         #     Function.test_n_cached(n=n-i)
         for i in r:
-            if (n-i) > 0:
-                Function.test_n_cached(n=n-i, r=range(r.start, r.stop, r.step))
+            if (n - i) > 0:
+                Function.test_n_cached(n=n - i, r=range(r.start, r.stop, r.step))
+
+    @track.track
+    @staticmethod
+    def apsp(i, j, r, n):
+        if i == j:
+            return
+        if r == 0:
+            return
+
+        for _k in range(n):
+            Function.apsp(i=i, j=_k, r=r - 1, n=n)
+
+    @track.track
+    @functools.cache
+    @staticmethod
+    def apsp_cached(i, j, r, n):
+        if i == j:
+            return
+        if r == 0:
+            return
+
+        for _k in range(n):
+            Function.apsp_cached(i=i, j=_k, r=r - 1, n=n)
+
 
 def main():
 
-    n = int(input())
+    # n = int(input())
 
     # Function.rod_cutting_complex(n=n)
     # Function.rod_cutting_complex_cached(n=n)
@@ -273,6 +299,15 @@ def main():
     # Function.test_n_cached(n=n, r=range(2, 7, 2))
     # Function.test_n_cached(n=n, r=range(1, 6, 2))
 
+    # apsp
+    n = 7
+    # for i in range(n):
+    #     for j in range(n):
+    #         if i != j:
+    #             Function.apsp_cached(i=2, j=5, r=n - 1, n=n)
 
+    Function.apsp_cached(i=2, j=5, r=n - 1, n=n)
+
+#  python3 ./functions.py | python3 track/__init__.py analyze - output
 if __name__ == "__main__":
     main()
