@@ -310,7 +310,7 @@ def main():
     # Function.test_n_cached(n=n, r=range(1, 6, 2))
 
     # apsp
-    n = 5
+    # n = 5
     # for i in range(n):
     #     for j in range(n):
     #         if i != j:
@@ -318,7 +318,7 @@ def main():
 
     # Function.apsp_cached(i=2, j=5, r=n - 1, n=n)
 
-    Function.apsp_floyd_warshal_cached(k=n, i=0, j=n - 1, n=n)
+    # Function.apsp_floyd_warshal_cached(k=n, i=0, j=n - 1, n=n)
 
     return None
 
