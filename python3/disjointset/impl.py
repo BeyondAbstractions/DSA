@@ -6,9 +6,7 @@
 # Merging 2 elements means merging their respective trees.
 
 # operations:
-# find(x): find the representative element of the set that x belongs to,
-#          if x is not belonging to any set make it the root of a new
-#          disjoint set, i.e, x is its own tree.
+# find(x): find the representative element of the set that x belongs to
 # union(x, y): merge the sets that x and y belong to
 # total(x): return the size of the set that x belongs to
 # members(x): return all the members of the set that x belongs to
@@ -24,7 +22,7 @@ import random
 class DisJointSet(object):
 
     def __init__(self):
-        # keys are all elements
+        # keys are all elements, value is parent
         self.pi = dict()
 
         # keys are always roots of the various trees
@@ -102,6 +100,7 @@ class DisJointSet(object):
         if not found:
             return False
         elif root == x and self.size[root] == 1:
+            # x is already isolated
             return True
         else:
             members = {k for k in self.pi.keys() if self.find(k)[1] == root and k != x}
