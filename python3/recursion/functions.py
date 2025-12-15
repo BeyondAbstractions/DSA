@@ -250,6 +250,16 @@ class Function:
         for _k in range(n):
             Function.apsp_cached(i=i, j=_k, r=r - 1, n=n)
 
+    @track.track
+    @functools.cache
+    @staticmethod
+    def apsp_floyd_warshal_cached(k, i, j, n):
+        if k == 0:
+            return
+        Function.apsp_floyd_warshal_cached(k=k - 1, i=i, j=j, n=n)
+        Function.apsp_floyd_warshal_cached(k=k - 1, i=i, j=k, n=n)
+        Function.apsp_floyd_warshal_cached(k=k - 1, i=k, j=j, n=n)
+
 
 def main():
 
@@ -300,13 +310,18 @@ def main():
     # Function.test_n_cached(n=n, r=range(1, 6, 2))
 
     # apsp
-    n = 7
+    n = 5
     # for i in range(n):
     #     for j in range(n):
     #         if i != j:
     #             Function.apsp_cached(i=2, j=5, r=n - 1, n=n)
 
-    Function.apsp_cached(i=2, j=5, r=n - 1, n=n)
+    # Function.apsp_cached(i=2, j=5, r=n - 1, n=n)
+
+    Function.apsp_floyd_warshal_cached(k=n, i=0, j=n - 1, n=n)
+
+    return None
+
 
 #  python3 ./functions.py | python3 track/__init__.py analyze - output
 if __name__ == "__main__":
