@@ -1,28 +1,35 @@
-# A heap is a nearly complete binary tree: all but the last level is completely filled
+# A heap is a nearly complete binary tree: all but the last level is completely filled.
+# 0 based indexing.
 # Memory wise it is represented as an array with the relations:
-# parent(i) = i//2 - 1
-# left(i) = i*2 + 1
-# right(i) = i*2 + 2
+# parent(i) = i // 2 if i % 2 == 1 else (i // 2) - 1
+# left(i) = 2*i + 1
+# right(i) = 2*i + 2
 
-# Leaf nodes start appearing at (n-1)//2, (n-1)//2 + 1, ... n-1
+# Assuming n is odd then n-1(the last element in 0 based index scheme) will be even and parent will be (n-1)//2 - 1
+# n is odd
+# n-1 is even
+# heap size is n.
+# Leaf nodes start appearing at (n-1)//2, (n-1)//2 + 1,  ... n-1
 # The last parent is at index (n-1)//2 - 1
 # The first leaf is at index (n-1)//2
 # Why ?
 # Every leaf node must have a parent otherwise you get a disjoint heap forest which is not a nearly complete binary tree.
 # parent(n-1) = (n-1)//2 - 1
 # left((n-1)//2 - 1) = 2*((n-1)//2 - 1) + 1 = n - 1 - 2 + 1 = n - 2 = 2nd last index in a 0 based index scheme
-# right((n-1)//2 - 1) = 2*((n-1)//2) + 2 = n - 1 - 2 + 1 = n - 1 = last index in a 0 based index scheme
+# right((n-1)//2 - 1) = 2*((n-1)//2 -1) + 2 = n - 1 - 2 + 2 = n - 1 = last index in a 0 based index scheme
 # So the last parent is at (n-1)//2 - 1.
 # The first leaf is at (n-1)//2.
 # Any i > than the last parent i.e i > (n-1)//2 - 1 will result in a index >= n.
-# left(n//2) = 2*(n//2) + 1 = n + 1 >= n, so no more leaves.
-# right(n//2) = 2*(n//2) + 2 = n + 2 >= n, so no more leaves.
+# left((n-1)//2) = 2*((n-1)//2) + 1 = n-1 + 1 = n >= n
+# right((n-1)//2) = 2*((n-1)//2) + 2 = n-1 + 2 = n + 1 >= n
+# Similar analysis can be done when n is even.
 
 # The heap property is that for every node i other than root, we have A[parent(i)] >= A[i] for max heap
 # and A[parent(i)] <= A[i] for min heap.
 
 
 import abc
+import pprint
 
 
 class Comparator(abc.ABC):
@@ -64,9 +71,12 @@ class Heap(object):
         self.heap = l
         self.heapsize = len(l)
         self.comparator = comparator
+        self.objmap = dict()
+        for idx, obj in enumerate(l):
+            self.objmap[id(obj)] = idx
 
     def parent(self, i):
-        return (i // 2) - 1
+        return i // 2 if i % 2 == 1 else (i // 2) - 1
 
     def left(self, i):
         return 2 * i + 1
@@ -76,9 +86,18 @@ class Heap(object):
 
     def swap(self, i, j):
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
+        self.objmap[id(self.heap[i])] = i
+        self.objmap[id(self.heap[j])] = j
 
     def get(self, i):
         return self.heap[i]
+
+    def set(self, i, obj):
+        self.heap[i] = obj
+        self.objmap[id(obj)] = i
+
+    def locate(self, obj):
+        return self.objmap.get(id(obj))
 
     def heapify(self, i):
         root = i
@@ -87,16 +106,17 @@ class Heap(object):
             left = self.left(root)
             right = self.right(root)
 
-            assert left > right
+            assert left < right
 
             if left >= self.heapsize:
                 break
 
             lorsm = root
 
-            if self.heapify_compare(lorsm, left):
+            if self.heapify_compare(left, lorsm):
                 lorsm = left
-            elif self.heapify_compare(lorsm, right):
+
+            if right < self.heapsize and self.heapify_compare(right, lorsm):
                 lorsm = right
 
             if lorsm == root:
@@ -120,8 +140,22 @@ class Heap(object):
         for i in range(parent_of_last_leaf, -1, -1):
             self.heapify(i)
 
+    def __str__(self):
+        return pprint.pformat(self.heap)
 
-class MaxHeap(object):
+    def extract(self):
+        if self.heapsize == 0:
+            raise Exception("Heap is empty")
+
+        root = self.get(0)
+        self.swap(0, self.heapsize - 1)
+        self.heapsize -= 1
+        self.heapify(0)
+        del self.objmap[id(root)]
+        return root
+
+
+class MaxHeap(Heap):
 
     def __init__(self, l=[], comparator=DefaultComparator()):
         Heap.__init__(self, l=l, comparator=comparator)
@@ -132,7 +166,7 @@ class MaxHeap(object):
         return self.comparator.gt(lhs_val, rhs_val)
 
 
-class MinHeap(object):
+class MinHeap(Heap):
     def __init__(self, l=[], comparator=DefaultComparator()):
         Heap.__init__(self, l=l, comparator=comparator)
 
@@ -144,3 +178,37 @@ class MinHeap(object):
 
 MinPriorityQ = MinHeap
 MaxPriorityQ = MaxHeap
+
+
+import unittest
+
+
+class TestHeap(unittest.TestCase):
+
+    def test_heapify_empty(self):
+        for C in [MaxHeap, MinHeap]:
+            h = C([])
+            h.build_heap()
+            self.assertEqual(h.heap, [])
+
+    def test_heapify_single(self):
+        for C in [MaxHeap, MinHeap]:
+            h = C([1])
+            h.build_heap()
+            self.assertEqual(h.heap, [1])
+
+    def test_max_heapify(self):
+        h = MaxHeap([4, 1, 3, 2, 16, 9, 10, 14, 8, 7, 3])
+        h.build_heap()
+        for i in [16, 14, 10, 9, 8, 7, 4, 3, 3, 2, 1]:
+            self.assertEqual(h.extract(), i)
+
+    def test_min_heapify(self):
+        h = MinHeap([4, 1, 3, 2, 16, 9, 10, 14, 8, 7, 3])
+        h.build_heap()
+        for i in [1, 2, 3, 3, 4, 7, 8, 9, 10, 14, 16]:
+            self.assertEqual(h.extract(), i)
+
+
+if __name__ == "__main__":
+    unittest.main()
