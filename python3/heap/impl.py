@@ -165,6 +165,30 @@ class MaxHeap(Heap):
         rhs_val = self.get(rhs)
         return self.comparator.gt(lhs_val, rhs_val)
 
+    def max(self):
+        return self.get(0)
+
+    # push the object up the heap tree until it is in the correct position
+    def increase(self, obj):
+        i = self.locate(obj)
+        iobj = self.get(i)
+        root = i
+
+        while 1:
+            if root == 0:
+                break
+
+            parent = self.parent(root)
+            pobj = self.get(parent)
+
+            if self.comparator.gt(iobj, pobj):
+                self.swap(root, parent)
+                root = parent
+            else:
+                break
+
+        self.set(root, obj)
+
 
 class MinHeap(Heap):
     def __init__(self, l=[], comparator=DefaultComparator()):
@@ -174,6 +198,30 @@ class MinHeap(Heap):
         lhs_val = self.get(lhs)
         rhs_val = self.get(rhs)
         return self.comparator.lt(lhs_val, rhs_val)
+
+    def min(self):
+        return self.get(0)
+
+    # push the object up the heap tree until it is in the correct position
+    def decrease(self, obj):
+        i = self.locate(obj)
+        iobj = self.get(i)
+        root = i
+
+        while 1:
+            if root == 0:
+                break
+
+            parent = self.parent(root)
+            pobj = self.get(parent)
+
+            if self.comparator.lt(iobj, pobj):
+                self.swap(root, parent)
+                root = parent
+            else:
+                break
+
+        self.set(root, obj)
 
 
 MinPriorityQ = MinHeap
@@ -208,6 +256,69 @@ class TestHeap(unittest.TestCase):
         h.build_heap()
         for i in [1, 2, 3, 3, 4, 7, 8, 9, 10, 14, 16]:
             self.assertEqual(h.extract(), i)
+
+    class MyComparator(Comparator):
+        def lt(self, a, b):
+            return a.priority < b.priority
+
+        def gt(self, a, b):
+            return a.priority > b.priority
+
+        def lte(self, a, b):
+            return a.priority <= b.priority
+
+        def gte(self, a, b):
+            return a.priority >= b.priority
+
+    def test_heap_increase_single(self):
+        from types import SimpleNamespace
+
+        l = [SimpleNamespace(priority=1)]
+        h = MaxPriorityQ(l, comparator=TestHeap.MyComparator())
+        h.build_heap()
+        self.assertEqual(h.max().priority, 1)
+
+        h.max().priority = 5
+        h.increase(h.max())
+        self.assertEqual(h.extract().priority, 5)
+
+    def test_heap_increase(self):
+        from types import SimpleNamespace
+
+        l = [SimpleNamespace(priority=1), SimpleNamespace(priority=2)]
+        h = MaxPriorityQ(l, comparator=TestHeap.MyComparator())
+        h.build_heap()
+        self.assertEqual(h.max().priority, 2)
+
+        h.get(1).priority = 5
+        h.increase(h.get(1))
+        self.assertEqual(h.extract().priority, 5)
+        self.assertEqual(h.extract().priority, 2)
+
+    def test_heap_decrease_single(self):
+        from types import SimpleNamespace
+
+        l = [SimpleNamespace(priority=5)]
+        h = MinPriorityQ(l, comparator=TestHeap.MyComparator())
+        h.build_heap()
+        self.assertEqual(h.min().priority, 5)
+
+        h.min().priority = 1
+        h.decrease(h.min())
+        self.assertEqual(h.extract().priority, 1)
+
+    def test_heap_decrease(self):
+        from types import SimpleNamespace
+
+        l = [SimpleNamespace(priority=5), SimpleNamespace(priority=2)]
+        h = MinPriorityQ(l, comparator=TestHeap.MyComparator())
+        h.build_heap()
+        self.assertEqual(h.min().priority, 2)
+
+        h.get(1).priority = 1
+        h.decrease(h.get(1))
+        self.assertEqual(h.extract().priority, 1)
+        self.assertEqual(h.extract().priority, 2)
 
 
 if __name__ == "__main__":
