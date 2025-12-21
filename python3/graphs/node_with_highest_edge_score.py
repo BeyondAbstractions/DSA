@@ -1,5 +1,7 @@
 # link: https://leetcode.com/problems/node-with-highest-edge-score/description/?envType=problem-list-v2&envId=graph
 
+from typing import List
+
 
 class Solution:
     def edgeScore(self, edges: List[int]) -> int:
