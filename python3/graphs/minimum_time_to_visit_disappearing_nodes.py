@@ -1,4 +1,4 @@
-# link: https://leetcode.com/problems/find-eventual-safe-states/description/?envType=problem-list-v2&envId=graph
+# link: https://leetcode.com/problems/minimum-time-to-visit-disappearing-nodes/description/?envType=problem-list-v2&envId=graph
 
 from typing import List
 
