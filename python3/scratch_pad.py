@@ -10,6 +10,17 @@ class ScratchPad(unittest.TestCase):
         yield 1
         yield 2
 
+    @staticmethod
+    def gen_2():
+        yield 0
+        return
+        yield 1
+
+    def test_gen_2(self):
+        g = ScratchPad.gen_2()
+        self.assertEqual(next(g), 0)
+        self.assertRaises(StopIteration, next, g)
+
     def test_yield(self):
         g = ScratchPad.gen()
         for i in range(3):
