@@ -73,7 +73,14 @@ class Heap(object):
         self.comparator = comparator
         self.objmap = dict()
         for idx, obj in enumerate(l):
-            self.objmap[id(obj)] = idx
+            self.objmap[Heap._get_obj_hash(obj)] = idx
+
+    @staticmethod
+    def _get_obj_hash(obj):
+        try:
+            return hash(obj)
+        except:
+            return id(obj)
 
     def parent(self, i):
         return i // 2 if i % 2 == 1 else (i // 2) - 1
@@ -86,19 +93,20 @@ class Heap(object):
 
     def swap(self, i, j):
         self.heap[i], self.heap[j] = self.heap[j], self.heap[i]
-        self.objmap[id(self.heap[i])] = i
-        self.objmap[id(self.heap[j])] = j
+        self.objmap[Heap._get_obj_hash(self.heap[i])] = i
+        self.objmap[Heap._get_obj_hash(self.heap[j])] = j
 
     def get(self, i):
         return self.heap[i]
 
     def set(self, i, obj):
         self.heap[i] = obj
-        self.objmap[id(obj)] = i
+        self.objmap[Heap._get_obj_hash(obj)] = i
 
     def locate(self, obj):
-        return self.objmap.get(id(obj))
+        return self.objmap.get(Heap._get_obj_hash(obj))
 
+    # push the object down the heap tree until its in correct position
     def heapify(self, i):
         root = i
 
@@ -143,15 +151,27 @@ class Heap(object):
     def __str__(self):
         return pprint.pformat(self.heap)
 
+    def is_empty(self):
+        return self.heapsize == 0
+
     def extract(self):
+        # minheap: replace the root with an element that is greater
+        #          than the roots(non-leaf) of all subtrees in the
+        #          heap at the root and push it down
+        # maxheap: replace the root with an element that is smaller
+        #          than the roots(non-leaf) of all subtrees in the
+        #          heap at the root and push it down
+        # either case you cause the corect root to come up
+
         if self.heapsize == 0:
             raise Exception("Heap is empty")
 
         root = self.get(0)
         self.swap(0, self.heapsize - 1)
         self.heapsize -= 1
+        del self.objmap[Heap._get_obj_hash(root)]
         self.heapify(0)
-        del self.objmap[id(root)]
+
         return root
 
 
@@ -315,7 +335,11 @@ class TestHeap(unittest.TestCase):
         h.build_heap()
         self.assertEqual(h.min().priority, 2)
 
+        before_id = Heap._get_obj_hash(h.get(1))
         h.get(1).priority = 1
+        after_id = Heap._get_obj_hash(h.get(1))
+        self.assertEqual(before_id, after_id)
+
         h.decrease(h.get(1))
         self.assertEqual(h.extract().priority, 1)
         self.assertEqual(h.extract().priority, 2)
