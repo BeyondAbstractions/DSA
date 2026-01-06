@@ -48,8 +48,65 @@ class ScratchPad(unittest.TestCase):
         self.assertEqual(c.method(), None)
 
 
+class Style(object):
+
+    def __init__(self):
+        pass
+
+    def italics(self, fn):
+        def wrapper():
+            return "<i>" + fn() + "</i>"
+
+        return wrapper
+
+    def upper(self, fn):
+        def wrapper():
+            return fn().upper()
+
+        return wrapper
+
+
+style = Style()
+
+
+@style.italics
+@style.upper
+def welcome():
+    return "welcome"
+
+
+class Style2(object):
+
+    def __init__(self, fmt):
+        self.fmt = fmt
+
+    def __call__(self, fn):
+        if self.fmt == "upper":
+
+            def wrapper():
+                return fn().upper()
+
+            return wrapper
+        elif self.fmt == "italics":
+
+            def wrapper():
+                return "<i>" + fn() + "</fi>"
+
+            return wrapper
+
+
+@Style2("upper")
+@Style2("italics")
+def welcome2():
+    return "welcome"
+
+
 def main():
-    return unittest.main()
+    # return unittest.main()
+    # w = welcome()
+    # print(w)
+    w = welcome2()
+    print(w)
 
 
 if __name__ == "__main__":

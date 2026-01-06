@@ -3,15 +3,40 @@ from types import FrameType
 
 
 # Define a simple function to debug
-def demo(n):
+def compute(n):
     total = 0
     for i in range(n):
         total += i * i
     return total
 
 
+def loop(n):
+    for i in range(n):
+        pass
+
+
 def raise_exception():
     raise Exception("Dummy!")
+
+
+def test_finally():
+    try:
+        raise Exception("Dummy!")
+    finally:
+        pass
+
+
+def test_except():
+    try:
+        raise Exception("Dummy!")
+    except Exception as exp:
+        pass
+    finally:
+        pass
+
+
+def empty():
+    pass
 
 
 def callee():
@@ -48,7 +73,7 @@ class MyDebugger(bdb.Bdb):
 
 def main():
     dbg = MyDebugger()
-    # dbg.runcall(demo, 5)
+    # dbg.runcall(compute, 5)
     # dbg.runcall(raise_exception)
     dbg.runcall(caller)
 
