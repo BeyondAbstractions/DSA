@@ -12,7 +12,8 @@ def compute(n):
 
 def loop(n):
     for i in range(n):
-        pass
+        i *= i
+        print(f"i: { i }")
 
 
 def raise_exception():

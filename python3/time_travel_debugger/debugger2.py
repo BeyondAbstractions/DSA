@@ -37,6 +37,22 @@ from typing import (
 )
 import time_travel_debugger.templates
 import jinja2
+import functools
+
+
+def safe_repr(value: Any, maxlen: int = 256) -> str:
+    """Return repr(value), truncated to maxlen, with a safe fallback."""
+    try:
+        s = repr(value)
+    except Exception as e:  # pragma: no cover (rare repr errors)
+        s = f"<repr error: {e}>"
+    return s if len(s) <= maxlen else (s[: maxlen - 3] + "...")
+
+
+@functools.lru_cache(maxsize=128)
+def read_file(path) -> str:
+    with open(path, "rb") as f:
+        return f.read().decode()
 
 
 class HtmlStepperDebugger(bdb.Bdb):
@@ -72,6 +88,7 @@ class HtmlStepperDebugger(bdb.Bdb):
         sections["globals"] = "Globals"
         sections["locals"] = "Locals"
         sections["threads"] = "Threads"
+        sections["src"] = "Src"
         sections["visuals"] = "Visuals"
 
         with open(file=str(file_path), mode="w") as file_pointer:
@@ -85,6 +102,24 @@ class HtmlStepperDebugger(bdb.Bdb):
             )
 
             for sid, sname in sections.items():
+                content = ""
+                if sid == "callstack":
+                    pass
+                elif sid == "globals":
+                    f_globals = frame.f_globals
+                    content = self.render_globals(vars=locals())
+                elif sid == "locals":
+                    f_locals = frame.f_locals
+                    content = self.render_locals(vars=locals())
+                elif sid == "threads":
+                    pass
+                elif sid == "src":
+                    co_filename = str(Path(frame.f_code.co_filename).resolve())
+                    f_lineno = int(str(frame.f_lineno))
+                    content = self.render_src(vars=locals())
+                elif sid == "visuals":
+                    pass
+
                 print(
                     jinja2.Template(
                         time_travel_debugger.templates.section_template
@@ -93,7 +128,7 @@ class HtmlStepperDebugger(bdb.Bdb):
                         current=f"{self.step}",
                         sid=sid,
                         sname=sname,
-                        lines=20,
+                        content=content,
                     ),
                     file=file_pointer,
                 )
@@ -137,6 +172,36 @@ class HtmlStepperDebugger(bdb.Bdb):
         print(
             f"[{self.step}] user_return:  {frame.f_code.co_filename}:{frame.f_code.co_name}:{frame.f_lineno} -> {return_value}"
         )
+
+    def render_globals(self, vars) -> str:
+        f_globals = vars["f_globals"]
+        return jinja2.Template(time_travel_debugger.templates.table_template).render(
+            columns=["name", "type", "value"],
+            rows=[
+                (local_var, type(local_obj).__name__, safe_repr(local_obj))
+                for local_var, local_obj in sorted(
+                    f_globals.items(), key=lambda item: item[0]
+                )
+                if not str(local_var).startswith("__")
+            ],
+        )
+
+    def render_locals(self, vars) -> str:
+        f_locals = vars["f_locals"]
+        return jinja2.Template(time_travel_debugger.templates.table_template).render(
+            columns=["name", "type", "value"],
+            rows=[
+                (local_var, type(local_obj).__name__, safe_repr(local_obj))
+                for local_var, local_obj in f_locals.items()
+            ],
+        )
+
+    def render_src(self, vars) -> str:
+        co_filename = vars["co_filename"]
+        f_lineno = vars["f_lineno"]
+        return jinja2.Template(
+            time_travel_debugger.templates.prism_code_template
+        ).render(data_line=str(f_lineno), code=read_file(co_filename))
 
     def finalize(self):
         last_step = self.step - 1
@@ -211,8 +276,6 @@ def run_function(
 
     try:
         dbg.runcall(func, *(args or []), **(kwargs or {}))
-    except:
-        pass
     finally:
         dbg.finalize()
 
