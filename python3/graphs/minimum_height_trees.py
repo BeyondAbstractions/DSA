@@ -82,6 +82,17 @@ class Test(unittest.TestCase):
         print("ret = ", ret)
         self.assertEqual(ret, [3])
 
+    def test_findMinHeightTrees_3(self):
+        # Edge case: single node, no edges
+        # Node 0 is trivially the root with height 0
+        s = Solution()
+        n = 1
+        edges = []
+        ret = s.findMinHeightTrees(n=n, edges=edges)
+        print()
+        print("ret = ", ret)
+        self.assertEqual(ret, [0])
+
 
 if __name__ == "__main__":
     unittest.main()

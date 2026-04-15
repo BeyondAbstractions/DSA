@@ -320,7 +320,9 @@ def main():
 
     # Function.apsp_floyd_warshal_cached(k=n, i=0, j=n - 1, n=n)
 
-    return None
+    Function.solve(3, 3)
+
+    # return None
 
 
 #  python3 ./functions.py | python3 track/__init__.py analyze - output
